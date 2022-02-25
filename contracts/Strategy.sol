@@ -51,15 +51,15 @@ contract Strategy is BaseStrategy {
     // ********** SETUP & CLONING **********
 
     constructor(
-        address _vault, 
-        address _tokemakLiquidityPool, 
+        address _vault,
+        address _tokemakLiquidityPool,
         string memory _strategyName
     ) public BaseStrategy(_vault) {
         _initializeStrategy(_tokemakLiquidityPool, _strategyName);
     }
 
     function _initializeStrategy(
-        address _tokemakLiquidityPool, 
+        address _tokemakLiquidityPool,
         string memory _strategyName
     ) internal {
         ILiquidityPool _liquidityPool = ILiquidityPool(_tokemakLiquidityPool);
@@ -77,7 +77,7 @@ contract Strategy is BaseStrategy {
         address _strategist,
         address _rewards,
         address _keeper,
-        address _tokemakLiquidityPool, 
+        address _tokemakLiquidityPool,
         string memory _strategyName
     ) external virtual {
         _initialize(_vault, _strategist, _rewards, _keeper);
@@ -86,11 +86,18 @@ contract Strategy is BaseStrategy {
 
     function clone(
         address _vault,
-        address _tokemakLiquidityPool, 
+        address _tokemakLiquidityPool,
         string memory _strategyName
     ) external returns (address) {
-        return this.clone(_vault, msg.sender, msg.sender, msg.sender, 
-                          _tokemakLiquidityPool, _strategyName);
+        return
+            this.clone(
+                _vault,
+                msg.sender,
+                msg.sender,
+                msg.sender,
+                _tokemakLiquidityPool,
+                _strategyName
+            );
     }
 
     function clone(
@@ -98,7 +105,7 @@ contract Strategy is BaseStrategy {
         address _strategist,
         address _rewards,
         address _keeper,
-        address _tokemakLiquidityPool, 
+        address _tokemakLiquidityPool,
         string memory _strategyName
     ) external returns (address newStrategy) {
         require(isOriginal, "!clone");
@@ -107,14 +114,26 @@ contract Strategy is BaseStrategy {
         assembly {
             // EIP-1167 bytecode
             let clone_code := mload(0x40)
-            mstore(clone_code, 0x3d602d80600a3d3981f3363d3d373d3d3d363d73000000000000000000000000)
+            mstore(
+                clone_code,
+                0x3d602d80600a3d3981f3363d3d373d3d3d363d73000000000000000000000000
+            )
             mstore(add(clone_code, 0x14), addressBytes)
-            mstore(add(clone_code, 0x28), 0x5af43d82803e903d91602b57fd5bf30000000000000000000000000000000000)
+            mstore(
+                add(clone_code, 0x28),
+                0x5af43d82803e903d91602b57fd5bf30000000000000000000000000000000000
+            )
             newStrategy := create(0, clone_code, 0x37)
         }
 
-        Strategy(newStrategy).initialize(_vault, _strategist, _rewards, 
-                                         _keeper, _tokemakLiquidityPool, _strategyName);
+        Strategy(newStrategy).initialize(
+            _vault,
+            _strategist,
+            _rewards,
+            _keeper,
+            _tokemakLiquidityPool,
+            _strategyName
+        );
 
         emit Cloned(newStrategy);
     }
@@ -163,7 +182,11 @@ contract Strategy is BaseStrategy {
         if (wantBalance > _debtOutstanding) {
             uint256 _amountToInvest = wantBalance.sub(_debtOutstanding);
 
-            _checkAllowance(address(tokemakLiquidityPool), address(want), _amountToInvest);
+            _checkAllowance(
+                address(tokemakLiquidityPool),
+                address(want),
+                _amountToInvest
+            );
 
             try tokemakLiquidityPool.deposit(_amountToInvest) {} catch {}
         }
@@ -184,10 +207,15 @@ contract Strategy is BaseStrategy {
 
         uint256 _amountToWithdraw = _amountNeeded.sub(_existingLiquidAssets);
 
-        (uint256 _cycleIndexWhenWithdrawable, uint256 _requestedWithdrawAmount) =
-            tokemakLiquidityPool.requestedWithdrawals(address(this));
+        (
+            uint256 _cycleIndexWhenWithdrawable,
+            uint256 _requestedWithdrawAmount
+        ) = tokemakLiquidityPool.requestedWithdrawals(address(this));
 
-        if (_requestedWithdrawAmount == 0 || _cycleIndexWhenWithdrawable > tokemakManager.getCurrentCycleIndex()) {
+        if (
+            _requestedWithdrawAmount == 0 ||
+            _cycleIndexWhenWithdrawable > tokemakManager.getCurrentCycleIndex()
+        ) {
             tokemakLiquidityPool.requestWithdrawal(_amountToWithdraw);
 
             return (_existingLiquidAssets, 0);
@@ -206,14 +234,20 @@ contract Strategy is BaseStrategy {
 
             if (_liquidatedAmount < _amountNeeded) {
                 // If we couldn't liquidate the full amount needed, start the withdrawal process for the remaining
-                tokemakLiquidityPool.requestWithdrawal(_amountNeeded.sub(_liquidatedAmount));
+                tokemakLiquidityPool.requestWithdrawal(
+                    _amountNeeded.sub(_liquidatedAmount)
+                );
             }
         } catch {
             return (_existingLiquidAssets, 0);
         }
     }
 
-    function liquidateAllPositions() internal override returns (uint256 _amountFreed) {
+    function liquidateAllPositions()
+        internal
+        override
+        returns (uint256 _amountFreed)
+    {
         (_amountFreed, ) = liquidatePosition(estimatedTotalAssets());
     }
 
@@ -271,7 +305,7 @@ contract Strategy is BaseStrategy {
         // TODO create an accurate price oracle
         return _amtInWei;
     }
-    
+
     // ----------------- TOKEMAK OPERATIONS ---------
 
     function requestWithdrawal(uint256 amount)
@@ -286,11 +320,11 @@ contract Strategy is BaseStrategy {
         uint8 _v,
         bytes32 _r,
         bytes32 _s // bytes calldata signature
-    )
-        external
-        onlyVaultManagers
-    {
-        require(_recipient.wallet == address(this), "Recipient wallet must be strategy");
+    ) external onlyVaultManagers {
+        require(
+            _recipient.wallet == address(this),
+            "Recipient wallet must be strategy"
+        );
         tokemakRewards.claim(_recipient, _v, _r, _s);
     }
 
@@ -310,8 +344,8 @@ contract Strategy is BaseStrategy {
 
     function removeTradeFactoryPermissions() external onlyEmergencyAuthorized {
         _removeTradeFactoryPermissions();
-
     }
+
     function _removeTradeFactoryPermissions() internal {
         tokeToken.safeApprove(tradeFactory, 0);
         tradeFactory = address(0);
@@ -319,27 +353,15 @@ contract Strategy is BaseStrategy {
 
     // ----------------- SUPPORT & UTILITY FUNCTIONS ----------
 
-    function tokeTokenBalance()
-        public
-        view
-        returns (uint256)
-    {
+    function tokeTokenBalance() public view returns (uint256) {
         return tokeToken.balanceOf(address(this));
     }
 
-    function wantBalance()
-        public
-        view
-        returns (uint256)
-    {
+    function wantBalance() public view returns (uint256) {
         return want.balanceOf(address(this));
     }
 
-    function tAssetBalance()
-        public
-        view
-        returns (uint256)
-    {
+    function tAssetBalance() public view returns (uint256) {
         return tAsset.balanceOf(address(this));
     }
 
