@@ -8,3 +8,6 @@ reports/
 
 # Node/npm
 node_modules/
+
+# Misc
+.DS_Store
