@@ -24,6 +24,9 @@ import "../interfaces/tokemak/ILiquidityPool.sol";
 import "../interfaces/tokemak/IManager.sol";
 import "../interfaces/tokemak/IRewards.sol";
 
+// NOTE: I recommend anyone wishing to use this generic strategy to first test amend 'token_1'
+//       (and all other token_1 fixtures) in the tests for their desired 'want,'
+//       and making sure that all tests pass.
 contract Strategy is BaseStrategy {
     using SafeERC20 for IERC20;
     using Address for address;

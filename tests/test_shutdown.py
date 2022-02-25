@@ -1,12 +1,56 @@
-# TODO: Add tests that show proper operation of this strategy through "emergencyExit"
-#       Make sure to demonstrate the "worst case losses" as well as the time it takes
-
-from brownie import ZERO_ADDRESS
 import pytest
 
 
-def test_vault_shutdown_can_withdraw(
-    chain, token, vault, strategy, user, amount, RELATIVE_APPROX
+def test_vault_shutdown_can_withdraw_token_1(
+    chain,
+    token_1,
+    token_1_vault,
+    token_1_strategy,
+    user,
+    token_1_amount,
+    RELATIVE_APPROX,
+    utils,
+    token_1_whale,
+):
+    vault_shutdown_can_withdraw(
+        chain,
+        token_1,
+        token_1_vault,
+        token_1_strategy,
+        user,
+        token_1_amount,
+        RELATIVE_APPROX,
+        utils,
+        token_1_whale,
+    )
+
+
+def test_vault_shutdown_can_withdraw_token_2(
+    chain,
+    token_2,
+    token_2_vault,
+    token_2_strategy,
+    user,
+    token_2_amount,
+    RELATIVE_APPROX,
+    utils,
+    token_2_whale,
+):
+    vault_shutdown_can_withdraw(
+        chain,
+        token_2,
+        token_2_vault,
+        token_2_strategy,
+        user,
+        token_2_amount,
+        RELATIVE_APPROX,
+        utils,
+        token_2_whale,
+    )
+
+
+def vault_shutdown_can_withdraw(
+    chain, token, vault, strategy, user, amount, RELATIVE_APPROX, utils, whale
 ):
     ## Deposit in Vault
     token.approve(vault.address, amount, {"from": user})
@@ -14,7 +58,8 @@ def test_vault_shutdown_can_withdraw(
     assert token.balanceOf(vault.address) == amount
 
     if token.balanceOf(user) > 0:
-        token.transfer(ZERO_ADDRESS, token.balanceOf(user), {"from": user})
+        # Would transfer to zero address but some ERC20s don't allow
+        token.transfer(whale.address, token.balanceOf(user), {"from": user})
 
     # Harvest 1: Send funds through the strategy
     strategy.harvest()
@@ -25,14 +70,64 @@ def test_vault_shutdown_can_withdraw(
     ## Set Emergency
     vault.setEmergencyShutdown(True)
 
+    utils.make_funds_withdrawable_from_tokemak(strategy, amount)
+
     ## Withdraw (does it work, do you get what you expect)
     vault.withdraw({"from": user})
 
     assert pytest.approx(token.balanceOf(user), rel=RELATIVE_APPROX) == amount
 
 
-def test_basic_shutdown(
-    chain, token, vault, strategy, user, strategist, amount, RELATIVE_APPROX
+def test_basic_shutdown_token_1(
+    chain,
+    token_1,
+    token_1_vault,
+    token_1_strategy,
+    user,
+    strategist,
+    token_1_amount,
+    RELATIVE_APPROX,
+    utils,
+):
+    basic_shutdown(
+        chain,
+        token_1,
+        token_1_vault,
+        token_1_strategy,
+        user,
+        strategist,
+        token_1_amount,
+        RELATIVE_APPROX,
+        utils,
+    )
+
+
+def test_basic_shutdown_token_2(
+    chain,
+    token_2,
+    token_2_vault,
+    token_2_strategy,
+    user,
+    strategist,
+    token_2_amount,
+    RELATIVE_APPROX,
+    utils,
+):
+    basic_shutdown(
+        chain,
+        token_2,
+        token_2_vault,
+        token_2_strategy,
+        user,
+        strategist,
+        token_2_amount,
+        RELATIVE_APPROX,
+        utils,
+    )
+
+
+def basic_shutdown(
+    chain, token, vault, strategy, user, strategist, amount, RELATIVE_APPROX, utils
 ):
     # Deposit to the vault
     token.approve(vault.address, amount, {"from": user})
@@ -55,6 +150,8 @@ def test_basic_shutdown(
 
     ## Set emergency
     strategy.setEmergencyExit({"from": strategist})
+
+    utils.make_funds_withdrawable_from_tokemak(strategy, amount)
 
     strategy.harvest()  ## Remove funds from strategy
 
