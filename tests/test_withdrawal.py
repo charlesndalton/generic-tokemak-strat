@@ -99,7 +99,7 @@ def withdraw_without_strategist_intervention(
     )
     assert cycleIndexWhenWithdrawable == tokemak_manager.getCurrentCycleIndex() + 1
 
-    utils.mock_one_day_passed()
+    utils.mock_one_cycle_passed()
     vault.withdraw({"from": user})
 
     # Strategy should have completed withdrawal
@@ -178,8 +178,8 @@ def partial_withdraw(
     )
 
     # Strategy should have triggered a request withdraw for the rest of the amount,
-    # so that once a day passes it should be available
-    utils.mock_one_day_passed()
+    # so that once a cycle passes it should be available
+    utils.mock_one_cycle_passed()
 
     vault.withdraw({"from": user})
     assert (

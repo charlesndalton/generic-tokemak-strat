@@ -105,7 +105,7 @@ def token_1_strategy(
         ymechs_safe,
         token_1_tokemak_liquidity_pool,
     )
-    token_1_vault.addStrategy(strategy, 10_000, 0, 2 ** 256 - 1, 1_000, {"from": gov})
+    token_1_vault.addStrategy(strategy, 10_000, 0, 2 ** 256 - 1, 0, {"from": gov})
 
     yield strategy
 
@@ -165,7 +165,7 @@ def token_2_strategy(
         ymechs_safe,
         token_2_tokemak_liquidity_pool,
     )
-    token_2_vault.addStrategy(strategy, 10_000, 0, 2 ** 256 - 1, 1_000, {"from": gov})
+    token_2_vault.addStrategy(strategy, 10_000, 0, 2 ** 256 - 1, 0, {"from": gov})
 
     yield strategy
 
@@ -233,7 +233,7 @@ class Utils:
         self.tokemak_manager = tokemak_manager
         self.account_with_tokemak_rollover_role = account_with_tokemak_rollover_role
 
-    def mock_one_day_passed(self):
+    def mock_one_cycle_passed(self):
         self.chain.sleep(3600 * 24 * 7)
         cycle_duration = self.tokemak_manager.getCycleDuration()
         # self.chain.mine(cycle_duration + 1000)
@@ -245,8 +245,8 @@ class Utils:
     def make_funds_withdrawable_from_tokemak(self, strategy, amount):
         strategy.requestWithdrawal(amount)
 
-        # Tokemak has 1 day timelock for withdrawals
-        self.mock_one_day_passed()
+        # Tokemak has 1 week timelock for withdrawals
+        self.mock_one_cycle_passed()
 
     def move_user_funds_to_vault(self, user, vault, token, amount):
         token.approve(vault.address, amount, {"from": user})
@@ -269,6 +269,8 @@ class Utils:
         )
         vault.setDepositLimit(2 ** 256 - 1, {"from": gov})
         vault.setManagement(management, {"from": gov})
+        vault.setManagementFee(0, {"from": gov})
+        vault.setPerformanceFee(0, {"from": gov})
         return vault
 
     def construct_strategy(
