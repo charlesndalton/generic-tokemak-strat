@@ -109,7 +109,7 @@ def accounting_edge_cases(
         == amount * 0.98
     )
 
-    utils.make_funds_withdrawable_from_tokemak(strategy, amount * 0.98)
+    utils.make_funds_withdrawable_from_tokemak(strategy, gov, amount * 0.98)
     chain.sleep(1)
     strategy.harvest()
     assert pytest.approx(strategy.estimatedTotalAssets(), rel=RELATIVE_APPROX) == amount

@@ -110,17 +110,44 @@ def token_1_strategy(
     yield strategy
 
 
+# @pytest.fixture
+# def token_2():
+#     # SUSHI
+#     token_address = "0x6B3595068778DD592e39A122f4f5a5cF09C90fE2"
+#     yield Contract(token_address)
 @pytest.fixture
 def token_2():
-    # SUSHI
-    token_address = "0x6B3595068778DD592e39A122f4f5a5cF09C90fE2"
+    # USDC
+    token_address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
     yield Contract(token_address)
+# @pytest.fixture
+# def token_2():
+#     # LUSD
+#     token_address = "0x5f98805A4E8be255a32880FDeC7F6728C6568bA0"
+#     yield Contract(token_address)
+# @pytest.fixture
+# def token_2():
+#     # SNX
+#     token_address = "0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F"
+#     yield Contract(token_address)
 
 
+# @pytest.fixture
+# def token_2_whale(accounts):
+#     # Binance for SUSHI
+#     yield accounts.at("0xF977814e90dA44bFA03b6295A0616a897441aceC", force=True)
 @pytest.fixture
 def token_2_whale(accounts):
-    # Binance
-    yield accounts.at("0xF977814e90dA44bFA03b6295A0616a897441aceC", force=True)
+    # Crypto.com for USDC
+    yield accounts.at("0x6262998ced04146fa42253a5c0af90ca02dfd2a3", force=True)
+# @pytest.fixture
+# def token_2_whale(accounts):
+#     # Stability pool for LUSD
+#     yield accounts.at("0x66017d22b0f8556afdd19fc67041899eb65a21bb", force=True)
+# @pytest.fixture
+# def token_2_whale(accounts):
+#     # Council for SNX
+#     yield accounts.at("0x99f4176ee457afedffcb1839c7ab7a030a5e4a92", force=True)
 
 
 @pytest.fixture
@@ -132,11 +159,22 @@ def token_2_amount(token_2, user, token_2_whale):
     yield amount
 
 
+# @pytest.fixture
+# def token_2_tokemak_liquidity_pool():
+#     address = "0xf49764c9C5d644ece6aE2d18Ffd9F1E902629777" #tSUSHI
+#     yield Contract(address)
 @pytest.fixture
 def token_2_tokemak_liquidity_pool():
-    address = "0xf49764c9C5d644ece6aE2d18Ffd9F1E902629777"
+    address = "0x04bDA0CF6Ad025948Af830E75228ED420b0e860d" #tUSDC
     yield Contract(address)
-
+# @pytest.fixture
+# def token_2_tokemak_liquidity_pool():
+#     address = "0x9eee9ee0cbd35014e12e1283d9388a40f69797a3" #tLUSD
+#     yield Contract(address)
+# @pytest.fixture
+# def token_2_tokemak_liquidity_pool():
+#     address = "0xeff721Eae19885e17f5B80187d6527aad3fFc8DE" #tSNX
+#     yield Contract(address)
 
 @pytest.fixture
 def token_2_vault(pm, gov, rewards, guardian, management, token_2, utils):
@@ -223,12 +261,13 @@ def RELATIVE_APPROX():
 
 
 @pytest.fixture
-def utils(chain, tokemak_manager, account_with_tokemak_rollover_role):
-    return Utils(chain, tokemak_manager, account_with_tokemak_rollover_role)
+def utils(accounts, chain, tokemak_manager, account_with_tokemak_rollover_role):
+    return Utils(accounts, chain, tokemak_manager, account_with_tokemak_rollover_role)
 
 
 class Utils:
-    def __init__(self, chain, tokemak_manager, account_with_tokemak_rollover_role):
+    def __init__(self, accounts, chain, tokemak_manager, account_with_tokemak_rollover_role):
+        self.accounts = accounts
         self.chain = chain
         self.tokemak_manager = tokemak_manager
         self.account_with_tokemak_rollover_role = account_with_tokemak_rollover_role
@@ -242,8 +281,8 @@ class Utils:
             {"from": self.account_with_tokemak_rollover_role},
         )
 
-    def make_funds_withdrawable_from_tokemak(self, strategy, amount):
-        strategy.requestWithdrawal(amount)
+    def make_funds_withdrawable_from_tokemak(self, strategy, gov, amount):
+        strategy.requestWithdrawal(amount, {"from": gov})
 
         # Tokemak has 1 week timelock for withdrawals
         self.mock_one_cycle_passed()

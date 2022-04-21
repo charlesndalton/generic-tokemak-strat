@@ -178,7 +178,7 @@ def profitable_harvest(
 
     strategy.tend()
 
-    utils.make_funds_withdrawable_from_tokemak(strategy, amount)
+    utils.make_funds_withdrawable_from_tokemak(strategy, gov, amount)
     chain.sleep(1)
     strategy.harvest({"from": strategist})
 

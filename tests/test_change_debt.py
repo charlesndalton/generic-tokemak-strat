@@ -75,7 +75,7 @@ def change_debt(
     # TODO: uncomment the following lines.
     vault.updateStrategyDebtRatio(strategy.address, 6_000, {"from": gov})
 
-    utils.make_funds_withdrawable_from_tokemak(strategy, fourty_percent)
+    utils.make_funds_withdrawable_from_tokemak(strategy, gov, fourty_percent)
 
     strategy.harvest()
     assert (

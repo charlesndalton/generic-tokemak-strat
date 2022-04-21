@@ -116,6 +116,7 @@ def test_partial_withdraw_token_1(
     user,
     token_1_amount,
     RELATIVE_APPROX,
+    gov,
     utils,
 ):
     partial_withdraw(
@@ -126,6 +127,7 @@ def test_partial_withdraw_token_1(
         user,
         token_1_amount,
         RELATIVE_APPROX,
+        gov,
         utils,
     )
 
@@ -138,6 +140,7 @@ def test_partial_withdraw_token_2(
     user,
     token_2_amount,
     RELATIVE_APPROX,
+    gov,
     utils,
 ):
     partial_withdraw(
@@ -148,13 +151,14 @@ def test_partial_withdraw_token_2(
         user,
         token_2_amount,
         RELATIVE_APPROX,
+        gov,
         utils,
     )
 
 
 # test that the strategy can execute a partial withdrawal, while initiating a withdrawal for the remaining amount needed
 def partial_withdraw(
-    chain, token, vault, strategy, user, amount, RELATIVE_APPROX, utils
+    chain, token, vault, strategy, user, amount, RELATIVE_APPROX, gov, utils
 ):
     # Deposit to the vault
     user_balance_before = token.balanceOf(user)
@@ -169,7 +173,7 @@ def partial_withdraw(
 
     # Allow first for a partial withdraw out of tokemak
     partial_withdraw_amount = amount / 4
-    utils.make_funds_withdrawable_from_tokemak(strategy, partial_withdraw_amount)
+    utils.make_funds_withdrawable_from_tokemak(strategy, gov, partial_withdraw_amount)
 
     vault.withdraw({"from": user})
     assert (

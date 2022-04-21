@@ -11,6 +11,7 @@ def test_operation_token_1(
     user,
     token_1_amount,
     RELATIVE_APPROX,
+    gov,
     utils,
 ):
     operation(
@@ -21,6 +22,7 @@ def test_operation_token_1(
         user,
         token_1_amount,
         RELATIVE_APPROX,
+        gov,
         utils,
     )
 
@@ -33,6 +35,7 @@ def test_operation_token_2(
     user,
     token_2_amount,
     RELATIVE_APPROX,
+    gov,
     utils,
 ):
     operation(
@@ -43,11 +46,12 @@ def test_operation_token_2(
         user,
         token_2_amount,
         RELATIVE_APPROX,
+        gov,
         utils,
     )
 
 
-def operation(chain, token, vault, strategy, user, amount, RELATIVE_APPROX, utils):
+def operation(chain, token, vault, strategy, user, amount, RELATIVE_APPROX, gov, utils):
     # Deposit to the vault
     user_balance_before = token.balanceOf(user)
     utils.move_user_funds_to_vault(user, vault, token, amount)
@@ -60,7 +64,7 @@ def operation(chain, token, vault, strategy, user, amount, RELATIVE_APPROX, util
     # tend()
     strategy.tend()
 
-    utils.make_funds_withdrawable_from_tokemak(strategy, amount)
+    utils.make_funds_withdrawable_from_tokemak(strategy, gov, amount)
 
     # withdrawal
     vault.withdraw({"from": user})

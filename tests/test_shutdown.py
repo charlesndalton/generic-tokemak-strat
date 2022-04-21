@@ -11,6 +11,7 @@ def test_vault_shutdown_can_withdraw_token_1(
     RELATIVE_APPROX,
     utils,
     token_1_whale,
+    gov,
 ):
     vault_shutdown_can_withdraw(
         chain,
@@ -22,6 +23,7 @@ def test_vault_shutdown_can_withdraw_token_1(
         RELATIVE_APPROX,
         utils,
         token_1_whale,
+        gov,
     )
 
 
@@ -35,6 +37,7 @@ def test_vault_shutdown_can_withdraw_token_2(
     RELATIVE_APPROX,
     utils,
     token_2_whale,
+    gov,
 ):
     vault_shutdown_can_withdraw(
         chain,
@@ -46,11 +49,12 @@ def test_vault_shutdown_can_withdraw_token_2(
         RELATIVE_APPROX,
         utils,
         token_2_whale,
+        gov,
     )
 
 
 def vault_shutdown_can_withdraw(
-    chain, token, vault, strategy, user, amount, RELATIVE_APPROX, utils, whale
+    chain, token, vault, strategy, user, amount, RELATIVE_APPROX, utils, whale, gov
 ):
     ## Deposit in Vault
     token.approve(vault.address, amount, {"from": user})
@@ -70,7 +74,7 @@ def vault_shutdown_can_withdraw(
     ## Set Emergency
     vault.setEmergencyShutdown(True)
 
-    utils.make_funds_withdrawable_from_tokemak(strategy, amount)
+    utils.make_funds_withdrawable_from_tokemak(strategy, gov, amount)
 
     ## Withdraw (does it work, do you get what you expect)
     vault.withdraw({"from": user})
@@ -87,6 +91,7 @@ def test_basic_shutdown_token_1(
     strategist,
     token_1_amount,
     RELATIVE_APPROX,
+    gov,
     utils,
 ):
     basic_shutdown(
@@ -98,6 +103,7 @@ def test_basic_shutdown_token_1(
         strategist,
         token_1_amount,
         RELATIVE_APPROX,
+        gov,
         utils,
     )
 
@@ -111,6 +117,7 @@ def test_basic_shutdown_token_2(
     strategist,
     token_2_amount,
     RELATIVE_APPROX,
+    gov,
     utils,
 ):
     basic_shutdown(
@@ -122,12 +129,13 @@ def test_basic_shutdown_token_2(
         strategist,
         token_2_amount,
         RELATIVE_APPROX,
+        gov,
         utils,
     )
 
 
 def basic_shutdown(
-    chain, token, vault, strategy, user, strategist, amount, RELATIVE_APPROX, utils
+    chain, token, vault, strategy, user, strategist, amount, RELATIVE_APPROX, gov, utils
 ):
     # Deposit to the vault
     token.approve(vault.address, amount, {"from": user})
@@ -151,7 +159,7 @@ def basic_shutdown(
     ## Set emergency
     strategy.setEmergencyExit({"from": strategist})
 
-    utils.make_funds_withdrawable_from_tokemak(strategy, amount)
+    utils.make_funds_withdrawable_from_tokemak(strategy, gov, amount)
 
     strategy.harvest()  ## Remove funds from strategy
 
