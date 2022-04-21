@@ -315,10 +315,7 @@ contract Strategy is BaseStrategy {
 
     // ----------------- TOKEMAK OPERATIONS ---------
 
-    function requestWithdrawal(uint256 amount)
-        external
-        onlyEmergencyAuthorized
-    {
+    function requestWithdrawal(uint256 amount) external onlyVaultManagers {
         tokemakLiquidityPool.requestWithdrawal(amount);
     }
 
@@ -327,7 +324,7 @@ contract Strategy is BaseStrategy {
         uint8 _v,
         bytes32 _r,
         bytes32 _s // bytes calldata signature
-    ) external onlyVaultManagers {
+    ) external onlyKeepers {
         require(
             _recipient.wallet == address(this),
             "Recipient wallet must be strategy"
